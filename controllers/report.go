@@ -3,9 +3,10 @@ package controllers
 
 import (
 	"EasyGo/models"
-	"github.com/beego/beego/v2/server/web"
-	"github.com/beego/beego/v2/client/httplib"
 	"strings"
+
+	"github.com/beego/beego/v2/client/httplib"
+	"github.com/beego/beego/v2/server/web"
 )
 
 type ReportController struct {
@@ -23,9 +24,9 @@ func (c *ReportController) Mileage() {
 		return
 	}
 
-	url := "https://vtsapi.easygo-gps.co.id/api/report/total_km"
+	url := ""
 	request := httplib.Post(url)
-	request.Header("token", "54DBF55357244438B965C9C3F6ECC325")
+	request.Header("token", "")
 	request.JSONBody(map[string]interface{}{
 		"start_time": startTime,
 		"stop_time":  stopTime,
@@ -67,9 +68,9 @@ func (c *ReportController) MultipleMileage() {
 		return
 	}
 
-	url := "https://vtsapi.easygo-gps.co.id/api/report/total_km"
+	url := ""
 	request := httplib.Post(url)
-	request.Header("token", "54DBF55357244438B965C9C3F6ECC325")
+	request.Header("token", "")
 	request.JSONBody(map[string]interface{}{
 		"start_time": startTime,
 		"stop_time":  stopTime,
@@ -97,15 +98,14 @@ func (c *ReportController) MultipleMileage() {
 	c.ServeJSON()
 }
 
-
 // func (c *ReportController) Mileage() {
 // 	startTime := c.GetString("start_time")
 // 	stopTime := c.GetString("stop_time")
 // 	carPlate := c.GetString("nopol")
 
-// 	url := "https://vtsapi.easygo-gps.co.id/api/report/total_km"
+// 	url := ""
 // 	request := httplib.Post(url)
-// 	request.Header("token", "54DBF55357244438B965C9C3F6ECC325")
+// 	request.Header("token", "")
 // 	request.JSONBody(map[string]interface{}{
 // 		"start_time": startTime,
 // 		"stop_time":  stopTime,
@@ -124,15 +124,14 @@ func (c *ReportController) MultipleMileage() {
 // 	c.ServeJSON()
 // }
 
-
 // func (c *ReportController) Mileage() {
 // 	startTime := c.GetString("start_time")
 // 	stopTime := c.GetString("stop_time")
 // 	carPlate := c.GetString("nopol")
 
-// 	url := "https://vtsapi.easygo-gps.co.id/api/report/total_km"
+// 	url := ""
 // 	request := httplib.Post(url)
-// 	request.Header("token", "54DBF55357244438B965C9C3F6ECC325")
+// 	request.Header("token", "")
 // 	request.JSONBody(map[string]interface{}{
 // 		"start_time": startTime,
 // 		"stop_time":  stopTime,
