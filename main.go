@@ -16,29 +16,17 @@ import (
 	_ "EasyGo/routers"
 
 	"github.com/beego/beego/v2/server/web"
+	"github.com/beego/beego/v2/server/web/filter/cors"
 	_ "github.com/go-sql-driver/mysql"
 )
 
 func main() {
-	// // Inisialisasi database
-	// err := orm.RegisterDataBase("default", "mysql", "root:Sesmo@12345@tcp(127.0.0.1:3306)/firebase?charset=utf8")
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// // Load models
-	// orm.RegisterModel(new(models.FirebaseFile))
-
-	// // Auto create table
-	// err = orm.RunSyncdb("default", false, true)
-	// if err != nil {
-	// 	panic(err)
-	// }
-
-	// web.Run()
-
-	// orm.RegisterDriver("mysql", orm.DRMySQL)
-	// orm.RegisterDataBase("default", "mysql", "root:Sesmo@12345@tcp(127.0.0.1:3306)/firebase?charset=utf8")
-
+	web.InsertFilter("*", web.BeforeRouter, cors.Allow(&cors.Options{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "PATCH"},
+		AllowHeaders:     []string{"Origin", "Authorization", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Content-Type", "x-xsrf-token", "AxiosHeaders", "X-Requested-With", "X-CSRF-Token", "Accept"},
+		ExposeHeaders:    []string{"Content-Length", "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Content-Type", "Authorization", "Set-Cookie", "Cookie"},
+		AllowCredentials: true,
+	}))
 	web.Run()
 }

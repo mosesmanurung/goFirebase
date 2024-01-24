@@ -2,7 +2,7 @@ module EasyGo
 
 go 1.21
 
-require github.com/beego/beego/v2 v2.1.4
+require github.com/beego/beego/v2 v2.1.5
 
 require github.com/smartystreets/goconvey v1.6.4
 
