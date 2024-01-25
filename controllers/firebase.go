@@ -54,7 +54,6 @@ import (
 	"cloud.google.com/go/storage"
 	firebase "firebase.google.com/go/v4"
 	"github.com/beego/beego/v2/server/web"
-	"github.com/beego/beego/v2/server/web/filter/cors"
 	"github.com/google/uuid"
 	"google.golang.org/api/option"
 )
@@ -63,26 +62,21 @@ type FirebaseFileController struct {
 	web.Controller
 }
 
-func (c *FirebaseFileController) EnableCORS() {
-	cors.Allow(&cors.Options{
-		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{"POST"},
-		AllowHeaders:     []string{"Origin", "Authorization", "Access-Control-Allow-Origin", "Content-Type"},
-		ExposeHeaders:    []string{"Content-Length", "Access-Control-Allow-Origin"},
-		AllowCredentials: true,
-	})
+func (c *FirebaseFileController) Prepare() {
+	c.Ctx.ResponseWriter.Header().Set("Access-Control-Allow-Origin", "*")
+	c.Ctx.ResponseWriter.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH")
+	c.Ctx.ResponseWriter.Header().Set("Access-Control-Allow-Headers", "Origin, Authorization, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Content-Type, x-xsrf-token, AxiosHeaders, X-Requested-With, X-CSRF-Token, Accept")
+	c.Ctx.ResponseWriter.Header().Set("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Content-Type, Authorization, Set-Cookie, Cookie")
+	c.Ctx.ResponseWriter.Header().Set("Access-Control-Allow-Credentials", "true")
+	c.Controller.Prepare()
 }
 
 // filePath, _ := web.AppConfig.String("firebase-storage::firebase_cred")
 // storageBucket, _ := web.AppConfig.String("firebase-storage::bucket_link")
 
 func (c *FirebaseFileController) Post() {
-	c.EnableCORS()
+	c.Prepare()
 
-	if c.Ctx.Input.Method() == "OPTIONS" {
-		c.ServeJSON()
-		return
-	}
 	token := uuid.New().String()
 	// filePath, _ := web.AppConfig.String("controllers/fir-file-6a929-firebase-adminsdk-qnpgx-54c1e392f8.json")
 	currentDir, err := os.Getwd()
@@ -165,12 +159,15 @@ func (c *FirebaseFileController) Post() {
 
 	downloadURL := fmt.Sprintf("https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media&token=%s", "fir-file-6a929.appspot.com", newObjectName, token)
 
+	c.Ctx.Output.Header("Access-Control-Allow-Origin", "*")
+	c.Ctx.Output.Header("Access-Control-Allow-Methods", "POST")
+	c.Ctx.Output.Header("Access-Control-Allow-Headers", "Content-Type")
 	c.Data["json"] = map[string]interface{}{"id": 1, "file_id": fileID, "file_link": downloadURL}
 	c.ServeJSON()
 }
 
 func (c *FirebaseFileController) PostMulti() {
-	// c.Prepare()
+	c.Prepare()
 	filePath, _ := web.AppConfig.String("firebase-storage::firebase_cred")
 	storageBucket, _ := web.AppConfig.String("firebase-storage::bucket_link")
 	pathName := []string{}
