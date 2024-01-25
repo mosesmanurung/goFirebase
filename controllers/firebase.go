@@ -71,6 +71,7 @@ func (c *FirebaseFileController) Post() {
 	file, header, err := c.GetFile("file")
 	fileID := token
 	if err != nil {
+		log.Printf("File upload error: %v", err)
 		c.CustomAbort(http.StatusBadRequest, "File upload error")
 		return
 	}
@@ -83,22 +84,21 @@ func (c *FirebaseFileController) Post() {
 	app, err := firebase.NewApp(context.Background(), config, opt)
 	if err != nil {
 		log.Printf("Firebase app initialization error: %v", err)
-		c.CustomAbort(http.StatusInternalServerError, "Firebase app initialization error")
+		c.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("Firebase app initialization error: %v", err))
 		return
 	}
 
-	// client, err := app.Storage(context.Background())
 	client, err := app.Storage(context.Background())
 	if err != nil {
 		log.Printf("Firebase Storage client initialization error: %v", err)
-		c.CustomAbort(http.StatusInternalServerError, "Firebase Storage client initialization error")
+		c.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("Firebase Storage client initialization error: %v", err))
 		return
 	}
 
 	bucket, err := client.DefaultBucket()
 	if err != nil {
 		log.Printf("Firebase default bucket retrieval error: %v", err)
-		c.CustomAbort(http.StatusInternalServerError, "Firebase default bucket retrieval error")
+		c.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("Firebase default bucket retrieval error: %v", err))
 		return
 	}
 
@@ -108,17 +108,17 @@ func (c *FirebaseFileController) Post() {
 
 	if _, err := file.Seek(0, 0); err != nil {
 		log.Printf("Error while seeking file content: %v", err)
-		c.CustomAbort(http.StatusInternalServerError, "Error while seeking file content")
+		c.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("Error while seeking file content: %v", err))
 		return
 	}
 	if _, err := io.Copy(wc, file); err != nil {
 		log.Printf("Error while copying file content to Firebase Storage: %v", err)
-		c.CustomAbort(http.StatusInternalServerError, "Error while copying file content to Firebase Storage")
+		c.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("Error while copying file content to Firebase Storage: %v", err))
 		return
 	}
 	if err := wc.Close(); err != nil {
 		log.Printf("Error while closing Firebase Storage writer: %v", err)
-		c.CustomAbort(http.StatusInternalServerError, "Error while closing Firebase Storage writer")
+		c.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("Error while closing Firebase Storage writer: %v", err))
 		return
 	}
 
@@ -135,11 +135,11 @@ func (c *FirebaseFileController) Post() {
 
 	if _, err := bucket.Object(newObjectName).Update(context.Background(), objectAttrsToUpdate); err != nil {
 		log.Printf("Error while updating object metadata: %v", err)
-		c.CustomAbort(http.StatusInternalServerError, "Error while updating object metadata")
+		c.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("Error while updating object metadata: %v", err))
 		return
 	}
 
-	downloadURL := fmt.Sprintf("https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media&token=%s", "fir-file-6a929.appspot.com", newObjectName, token)
+	downloadURL := fmt.Sprintf("https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media&token=%s", storageBucket, newObjectName, token)
 
 	c.Data["json"] = map[string]interface{}{"id": 1, "file_id": fileID, "file_link": downloadURL}
 	c.ServeJSON()
