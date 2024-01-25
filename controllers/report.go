@@ -24,9 +24,9 @@ func (c *ReportController) Mileage() {
 		return
 	}
 
-	url := ""
+	url := "https://vtsapi.easygo-gps.co.id/api/report/total_km"
 	request := httplib.Post(url)
-	request.Header("token", "")
+	request.Header("token", "54DBF55357244438B965C9C3F6ECC325")
 	request.JSONBody(map[string]interface{}{
 		"start_time": startTime,
 		"stop_time":  stopTime,
