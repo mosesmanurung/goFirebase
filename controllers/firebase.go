@@ -101,7 +101,7 @@ func (c *FirebaseFileController) Post() {
 	}
 	app, err := firebase.NewApp(context.Background(), config, opt)
 	if err != nil {
-		log.Fatalln(err)
+		log.Println("Firebase app initialization error:", err)
 		c.CustomAbort(http.StatusInternalServerError, "Firebase app initialization error")
 		return
 	}
@@ -125,12 +125,12 @@ func (c *FirebaseFileController) Post() {
 	wc := newObj.NewWriter(context.Background())
 
 	if _, err := file.Seek(0, 0); err != nil {
-		log.Fatalln(err)
+		log.Println("Error while seeking file content:", err)
 		c.CustomAbort(http.StatusInternalServerError, "Error while seeking file content")
 		return
 	}
 	if _, err := io.Copy(wc, file); err != nil {
-		log.Fatalln(err)
+		log.Println("Error while copying file content to Firebase Storage:", err)
 		c.CustomAbort(http.StatusInternalServerError, "Error while copying file content to Firebase Storage")
 		return
 	}
@@ -152,7 +152,7 @@ func (c *FirebaseFileController) Post() {
 	}
 
 	if _, err := bucket.Object(newObjectName).Update(context.Background(), objectAttrsToUpdate); err != nil {
-		log.Fatalln(err)
+		log.Println("Error while updating object metadata:", err)
 		c.CustomAbort(http.StatusInternalServerError, "Error while updating object metadata")
 		return
 	}
