@@ -71,7 +71,7 @@ func (c *FirebaseFileController) Post() {
 		c.CustomAbort(http.StatusInternalServerError, "Error getting current working directory")
 		return
 	}
-	filePath := filepath.Join("controllers/fir-file-6a929-firebase-adminsdk-qnpgx-54c1e392f8.json")
+	filePath := filepath.Join(currentDir, "controllers/fir-file-6a929-firebase-adminsdk-qnpgx-54c1e392f8.json")
 	log.Printf("File path: %s, %s", filePath, currentDir)
 
 	file, header, err := c.GetFile("file")
