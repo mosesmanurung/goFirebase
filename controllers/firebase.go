@@ -38,7 +38,6 @@ import (
 	"log"
 	"mime"
 	"net/http"
-	"os"
 	"path/filepath"
 
 	// "strings"
@@ -76,12 +75,8 @@ func (c *FirebaseFileController) Prepare() {
 
 func (c *FirebaseFileController) Post() {
 	token := uuid.New().String()
-	currentDir, err := os.Getwd()
-	if err != nil {
-		c.CustomAbort(http.StatusInternalServerError, "Error getting current working directory")
-		return
-	}
-	filePath := filepath.Join(currentDir, "controllers/fir-file-6a929-firebase-adminsdk-qnpgx-54c1e392f8.json")
+	filePath, _ := web.AppConfig.String("firebase-storage::firebase_cred")
+	storageBucket, _ := web.AppConfig.String("firebase-storage::bucket_link")
 
 	file, header, err := c.GetFile("file")
 	fileID := token
@@ -93,7 +88,7 @@ func (c *FirebaseFileController) Post() {
 
 	opt := option.WithCredentialsFile(filePath)
 	config := &firebase.Config{
-		StorageBucket: "fir-file-6a929.appspot.com",
+		StorageBucket: storageBucket,
 	}
 	app, err := firebase.NewApp(context.Background(), config, opt)
 	if err != nil {
