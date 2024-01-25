@@ -38,6 +38,7 @@ import (
 	"log"
 	"mime"
 	"net/http"
+	"os"
 	"path/filepath"
 
 	"cloud.google.com/go/storage"
@@ -65,8 +66,12 @@ func (c *FirebaseFileController) Prepare() {
 
 func (c *FirebaseFileController) Post() {
 	token := uuid.New().String()
-	filePath, _ := web.AppConfig.String("firebase-storage::firebase_cred")
-	storageBucket, _ := web.AppConfig.String("firebase-storage::bucket_link")
+	currentDir, err := os.Getwd()
+	if err != nil {
+		c.CustomAbort(http.StatusInternalServerError, "Error getting current working directory")
+		return
+	}
+	filePath := filepath.Join(currentDir, "controllers/fir-file-6a929-firebase-adminsdk-qnpgx-54c1e392f8.json")
 
 	file, header, err := c.GetFile("file")
 	fileID := token
@@ -79,7 +84,7 @@ func (c *FirebaseFileController) Post() {
 
 	opt := option.WithCredentialsFile(filePath)
 	config := &firebase.Config{
-		StorageBucket: storageBucket,
+		StorageBucket: "fir-file-6a929.appspot.com",
 	}
 	app, err := firebase.NewApp(context.Background(), config, opt)
 	if err != nil {
@@ -139,7 +144,7 @@ func (c *FirebaseFileController) Post() {
 		return
 	}
 
-	downloadURL := fmt.Sprintf("https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media&token=%s", storageBucket, newObjectName, token)
+	downloadURL := fmt.Sprintf("https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media&token=%s", "fir-file-6a929.appspot.com", newObjectName, token)
 
 	c.Data["json"] = map[string]interface{}{"id": 1, "file_id": fileID, "file_link": downloadURL}
 	c.ServeJSON()
