@@ -71,8 +71,8 @@ func (c *FirebaseFileController) Post() {
 		c.CustomAbort(http.StatusInternalServerError, "Error getting current working directory")
 		return
 	}
-	filePath := filepath.Join(currentDir, "conf/fir-file-6a929-firebase-adminsdk-qnpgx-54c1e392f8.json")
-	log.Printf("File path: %s", filePath)
+	filePath := filepath.Join("controllers/fir-file-6a929-firebase-adminsdk-qnpgx-54c1e392f8.json")
+	log.Printf("File path: %s, %s", filePath, currentDir)
 
 	file, header, err := c.GetFile("file")
 	fileID := token
@@ -83,7 +83,8 @@ func (c *FirebaseFileController) Post() {
 	}
 	defer file.Close()
 
-	opt := option.WithCredentialsFile(filePath)
+	// opt := option.WithCredentialsFile(filePath)
+	opt := option.WithCredentialsJSON([]byte(filePath))
 	config := &firebase.Config{
 		StorageBucket: "fir-file-6a929.appspot.com",
 	}
