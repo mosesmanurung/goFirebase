@@ -71,7 +71,8 @@ func (c *FirebaseFileController) Post() {
 		c.CustomAbort(http.StatusInternalServerError, "Error getting current working directory")
 		return
 	}
-	filePath := filepath.Join(currentDir, "controllers/fir-file-6a929-firebase-adminsdk-qnpgx-54c1e392f8.json")
+	filePath := filepath.Join(currentDir, "conf/fir-file-6a929-firebase-adminsdk-qnpgx-54c1e392f8.json")
+	log.Printf("File path: %s", filePath)
 
 	file, header, err := c.GetFile("file")
 	fileID := token
@@ -150,98 +151,98 @@ func (c *FirebaseFileController) Post() {
 	c.ServeJSON()
 }
 
-func (c *FirebaseFileController) PostMulti() {
-	c.Prepare()
-	filePath, _ := web.AppConfig.String("firebase-storage::firebase_cred")
-	storageBucket, _ := web.AppConfig.String("firebase-storage::bucket_link")
-	pathName := []string{}
-	pathFile := []string{}
+// func (c *FirebaseFileController) PostMulti() {
+// 	c.Prepare()
+// 	filePath, _ := web.AppConfig.String("firebase-storage::firebase_cred")
+// 	storageBucket, _ := web.AppConfig.String("firebase-storage::bucket_link")
+// 	pathName := []string{}
+// 	pathFile := []string{}
 
-	files, err := c.GetFiles("file")
+// 	files, err := c.GetFiles("file")
 
-	if err != nil {
-		c.CustomAbort(http.StatusBadRequest, "File upload error")
-		return
-	}
+// 	if err != nil {
+// 		c.CustomAbort(http.StatusBadRequest, "File upload error")
+// 		return
+// 	}
 
-	for _, fileHeader := range files {
-		file, err := fileHeader.Open()
-		if err != nil {
-			c.CustomAbort(http.StatusBadRequest, "File upload error")
-			return
-		}
-		defer file.Close()
+// 	for _, fileHeader := range files {
+// 		file, err := fileHeader.Open()
+// 		if err != nil {
+// 			c.CustomAbort(http.StatusBadRequest, "File upload error")
+// 			return
+// 		}
+// 		defer file.Close()
 
-		fileID := uuid.New().String()
-		opt := option.WithCredentialsFile(filePath)
-		config := &firebase.Config{
-			StorageBucket: storageBucket,
-		}
-		app, err := firebase.NewApp(context.Background(), config, opt)
-		if err != nil {
-			log.Fatalln(err)
-			c.CustomAbort(http.StatusInternalServerError, "Firebase app initialization error")
-			return
-		}
+// 		fileID := uuid.New().String()
+// 		opt := option.WithCredentialsFile(filePath)
+// 		config := &firebase.Config{
+// 			StorageBucket: storageBucket,
+// 		}
+// 		app, err := firebase.NewApp(context.Background(), config, opt)
+// 		if err != nil {
+// 			log.Fatalln(err)
+// 			c.CustomAbort(http.StatusInternalServerError, "Firebase app initialization error")
+// 			return
+// 		}
 
-		client, err := app.Storage(context.Background())
-		if err != nil {
-			log.Fatalln(err)
-			c.CustomAbort(http.StatusInternalServerError, "Firebase Storage client initialization error")
-			return
-		}
+// 		client, err := app.Storage(context.Background())
+// 		if err != nil {
+// 			log.Fatalln(err)
+// 			c.CustomAbort(http.StatusInternalServerError, "Firebase Storage client initialization error")
+// 			return
+// 		}
 
-		bucket, err := client.DefaultBucket()
-		if err != nil {
-			log.Fatalln(err)
-			c.CustomAbort(http.StatusInternalServerError, "Firebase default bucket retrieval error")
-			return
-		}
+// 		bucket, err := client.DefaultBucket()
+// 		if err != nil {
+// 			log.Fatalln(err)
+// 			c.CustomAbort(http.StatusInternalServerError, "Firebase default bucket retrieval error")
+// 			return
+// 		}
 
-		newObjectName := fileID
-		newObj := bucket.Object(newObjectName)
-		wc := newObj.NewWriter(context.Background())
+// 		newObjectName := fileID
+// 		newObj := bucket.Object(newObjectName)
+// 		wc := newObj.NewWriter(context.Background())
 
-		if _, err := file.Seek(0, 0); err != nil {
-			log.Fatalln(err)
-			c.CustomAbort(http.StatusInternalServerError, "Error while seeking file content")
-			return
-		}
-		if _, err := io.Copy(wc, file); err != nil {
-			log.Fatalln(err)
-			c.CustomAbort(http.StatusInternalServerError, "Error while copying file content to Firebase Storage")
-			return
-		}
-		if err := wc.Close(); err != nil {
-			log.Fatalln(err)
-			c.CustomAbort(http.StatusInternalServerError, "Error while closing Firebase Storage writer")
-			return
-		}
+// 		if _, err := file.Seek(0, 0); err != nil {
+// 			log.Fatalln(err)
+// 			c.CustomAbort(http.StatusInternalServerError, "Error while seeking file content")
+// 			return
+// 		}
+// 		if _, err := io.Copy(wc, file); err != nil {
+// 			log.Fatalln(err)
+// 			c.CustomAbort(http.StatusInternalServerError, "Error while copying file content to Firebase Storage")
+// 			return
+// 		}
+// 		if err := wc.Close(); err != nil {
+// 			log.Fatalln(err)
+// 			c.CustomAbort(http.StatusInternalServerError, "Error while closing Firebase Storage writer")
+// 			return
+// 		}
 
-		fileType := mime.TypeByExtension(filepath.Ext(fileHeader.Filename))
+// 		fileType := mime.TypeByExtension(filepath.Ext(fileHeader.Filename))
 
-		fmt.Print(fileType)
+// 		fmt.Print(fileType)
 
-		objectAttrsToUpdate := storage.ObjectAttrsToUpdate{
-			Metadata: map[string]string{
-				"firebaseStorageDownloadTokens": fileID,
-				"contentType":                   fileType,
-			},
-		}
+// 		objectAttrsToUpdate := storage.ObjectAttrsToUpdate{
+// 			Metadata: map[string]string{
+// 				"firebaseStorageDownloadTokens": fileID,
+// 				"contentType":                   fileType,
+// 			},
+// 		}
 
-		if _, err := bucket.Object(newObjectName).Update(context.Background(), objectAttrsToUpdate); err != nil {
-			log.Fatalln(err)
-			c.CustomAbort(http.StatusInternalServerError, "Error while updating object metadata")
-			return
-		}
+// 		if _, err := bucket.Object(newObjectName).Update(context.Background(), objectAttrsToUpdate); err != nil {
+// 			log.Fatalln(err)
+// 			c.CustomAbort(http.StatusInternalServerError, "Error while updating object metadata")
+// 			return
+// 		}
 
-		downloadURL := fmt.Sprintf("https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media&token=%s", "fir-file-6a929.appspot.com", newObjectName, fileID)
-		pathFile = append(pathFile, downloadURL)
-		pathName = append(pathName, fileID)
-	}
+// 		downloadURL := fmt.Sprintf("https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media&token=%s", "fir-file-6a929.appspot.com", newObjectName, fileID)
+// 		pathFile = append(pathFile, downloadURL)
+// 		pathName = append(pathName, fileID)
+// 	}
 
-	fmt.Print(pathName)
+// 	fmt.Print(pathName)
 
-	c.Data["json"] = map[string]interface{}{"file_id": pathFile, "file_link": pathName}
-	c.ServeJSON()
-}
+// 	c.Data["json"] = map[string]interface{}{"file_id": pathFile, "file_link": pathName}
+// 	c.ServeJSON()
+// }
