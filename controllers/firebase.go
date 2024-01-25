@@ -75,7 +75,16 @@ func (c *FirebaseFileController) Prepare() {
 // storageBucket, _ := web.AppConfig.String("firebase-storage::bucket_link")
 
 func (c *FirebaseFileController) Post() {
-	c.Prepare()
+	// c.Prepare()
+	c.Ctx.Output.Header("Access-Control-Allow-Origin", "*")
+	c.Ctx.Output.Header("Access-Control-Allow-Methods", "POST, OPTIONS")
+	c.Ctx.Output.Header("Access-Control-Allow-Headers", "Content-Type")
+
+	// Handle preflight request
+	if c.Ctx.Input.Method() == "OPTIONS" {
+		c.ServeJSON()
+		return
+	}
 	token := uuid.New().String()
 	// filePath, _ := web.AppConfig.String("controllers/fir-file-6a929-firebase-adminsdk-qnpgx-54c1e392f8.json")
 	currentDir, err := os.Getwd()
