@@ -54,6 +54,7 @@ import (
 	"cloud.google.com/go/storage"
 	firebase "firebase.google.com/go/v4"
 	"github.com/beego/beego/v2/server/web"
+	"github.com/beego/beego/v2/server/web/filter/cors"
 	"github.com/google/uuid"
 	"google.golang.org/api/option"
 )
@@ -62,25 +63,22 @@ type FirebaseFileController struct {
 	web.Controller
 }
 
-func (c *FirebaseFileController) Prepare() {
-	c.Ctx.ResponseWriter.Header().Set("Access-Control-Allow-Origin", "*")
-	c.Ctx.ResponseWriter.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH")
-	c.Ctx.ResponseWriter.Header().Set("Access-Control-Allow-Headers", "Origin, Authorization, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Content-Type, x-xsrf-token, AxiosHeaders, X-Requested-With, X-CSRF-Token, Accept")
-	c.Ctx.ResponseWriter.Header().Set("Access-Control-Expose-Headers", "Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Content-Type, Authorization, Set-Cookie, Cookie")
-	c.Ctx.ResponseWriter.Header().Set("Access-Control-Allow-Credentials", "true")
-	c.Controller.Prepare()
+func (c *FirebaseFileController) EnableCORS() {
+	cors.Allow(&cors.Options{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"POST"},
+		AllowHeaders:     []string{"Origin", "Authorization", "Access-Control-Allow-Origin", "Content-Type"},
+		ExposeHeaders:    []string{"Content-Length", "Access-Control-Allow-Origin"},
+		AllowCredentials: true,
+	})
 }
 
 // filePath, _ := web.AppConfig.String("firebase-storage::firebase_cred")
 // storageBucket, _ := web.AppConfig.String("firebase-storage::bucket_link")
 
 func (c *FirebaseFileController) Post() {
-	// c.Prepare()
-	c.Ctx.Output.Header("Access-Control-Allow-Origin", "*")
-	c.Ctx.Output.Header("Access-Control-Allow-Methods", "POST, OPTIONS")
-	c.Ctx.Output.Header("Access-Control-Allow-Headers", "Content-Type")
+	c.EnableCORS()
 
-	// Handle preflight request
 	if c.Ctx.Input.Method() == "OPTIONS" {
 		c.ServeJSON()
 		return
@@ -172,7 +170,7 @@ func (c *FirebaseFileController) Post() {
 }
 
 func (c *FirebaseFileController) PostMulti() {
-	c.Prepare()
+	// c.Prepare()
 	filePath, _ := web.AppConfig.String("firebase-storage::firebase_cred")
 	storageBucket, _ := web.AppConfig.String("firebase-storage::bucket_link")
 	pathName := []string{}
