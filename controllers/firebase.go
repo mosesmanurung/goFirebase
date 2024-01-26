@@ -33,16 +33,20 @@ package controllers
 
 import (
 	"context"
-	"encoding/json"
+	// "encoding/json"
 	"fmt"
 	"io"
+
+	// "io/ioutil"
+	"path/filepath"
 
 	// "json"
 	"log"
 	"mime"
 	"net/http"
-	"os"
-	"path/filepath"
+
+	// "path/filepath"
+	"EasyGo/models"
 
 	"cloud.google.com/go/storage"
 	firebase "firebase.google.com/go/v4"
@@ -69,26 +73,27 @@ func (c *FirebaseFileController) Prepare() {
 
 func (c *FirebaseFileController) Post() {
 	token := uuid.New().String()
-	currentDir, err := os.Getwd()
-	if err != nil {
-		c.CustomAbort(http.StatusInternalServerError, "Error getting current working directory")
-		return
-	}
-	filePath := map[string]interface{}{
-		"type":                        "service_account",
-		"project_id":                  "fir-file-6a929",
-		"private_key_id":              "54c1e392f8e7d9c1da7039322291e6855c6a7c82",
-		"private_key":                 "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDNTyGFg7wXdNu7\n7feI6zEh92h9j7Y2Vpb08bYHvrfRXJkp7ITjaZZGHxfEO+cvg7XWc8UxkCPbod5d\nevA6q5n/ekbCB4rWTYYBFU2DRkHJMkeYN2LuQwzr4W9/z539Mm1zV387WwaJNwJ7\n1cRSOlu6vo2HJQGhc0vuFKRsBYrQwOJhUlQXwjryUbJpiGeGuTwQxpcXuI0nYD8+\ny+p4ks6tfLSBa3HrxwYwdN3Edcvhwlnv7zrxYM/9qK06461csu0g6D7MdsdSp38u\nLHffQ6BDJiECcYd/zPP3aype+DdnD/S1KyuDxVI9gELP6yO7vaYg+ISFRIVd+x0D\nNiZcJ2RnAgMBAAECggEADX22K7JY4Ue2Crbb7bzauSsrTBjt9csh102s0vx20sSd\ncfJPVyxAijIP2z6+ddJXWBS6cAPTP2L3HDhwYcKV94I+9RAO0P8+H4MZWVd8Ci8K\nIlf9Yb+5MSTasVDgxlsScyJcQ3e7Sbf6K04EPQ0FqxNLdIZ7gXL0mdv0Y/7HPOlZ\ntYZdmlQPEix0PqI2Ecy/vmYvPMAC+kfvlkY5AIUZX/DBX6bxVfC6UZi0OLMgxXfI\n5VHZbYBuBUmlf1gjK533E4OO32RcmJScZikC+oz8dWonofaENlJmVJLZQYzKiqW6\ncHhGFLEkqT7FI5FjuedBrjjR1WYI46/GnR6Ev+CdHQKBgQDmUBNKpF8DqPZFzwhO\nDkSN/An9ALpAa8jFrzF/W/6G3mzXCVcb7PejOYoxVPwff3MrSpquUGvJEF/Ny6L/\nhx1ZOzWxNwwdGi9RhQ2EZvxeL+Vg6dcOvsotqVZojNwXgCniEGIMtay4bw822L3A\nLHRGem382VXvI+qTQQRw6c+grQKBgQDkNSWHBE4PPIuUXfVQISvqrSh08Mj+ZYU7\nqosJEobpYMihnQkSYjLLAPYoQ+GdXlK6L9KWecqU/NHRMrMrVl0nJNHyYCtyIzw6\nsVRiRYtK2Wf7NQn66x745PEhRAiPz5SJ8CY1TppZKqUZBfo4DuqGLBWZKkpLGtic\nuk9R+Ln34wKBgBDXGhIDIs9ps1g3YywR7wFSxIgzXWsIdo292aiuWVYTPXIbxLrO\nAO12b5xb0nObJhisQ9MrHjZ9dAPgN/LnNkYoBi0HEWOvXnZffDWKMjnQ1rzXXFo/\nqRjdoOvUIOO3A1j8Sa8UOaTiugIQpw8+MOJWYWRzn8z0m1pZDrIS5pOhAoGAUmhm\nvtTtI09n0BIF7gOsijgxbdktm8ApVpyFTKdmFIygpsvAZOUVFn2oZm3s4RkYoqd2\nUmR0pUyOsA6w6KttRB9luTLFPZg/vaofoMUgQc00YWCL1BJnwtVZxft9ZAE/0Hfq\nNEHINv7RU7H245tvUThGLGM7JNfy9NXKov1AmqUCgYEAmCEFUFl7RDBogTF2ZrAr\nt8SJl/5XGthm0nlR22+GudkeyddE9/1d6P/PPz9R+3n12ByfrJnekI/mhlLE8P9W\nfxX8mxRPhoYSbigwqV8HtH3G8OOwQ3j4imalJN/rXF8W2jETBPNvNhV+fS/6Povp\nsRiRJk+g9MfxLnSJKojotj4=\n-----END PRIVATE KEY-----\n",
-		"client_email":                "firebase-adminsdk-qnpgx@fir-file-6a929.iam.gserviceaccount.com",
-		"client_id":                   "100789701306693502943",
-		"auth_uri":                    "https://accounts.google.com/o/oauth2/auth",
-		"token_uri":                   "https://oauth2.googleapis.com/token",
-		"auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-		"client_x509_cert_url":        "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-qnpgx%40fir-file-6a929.iam.gserviceaccount.com",
-		"universe_domain":             "googleapis.com",
-	}
+	// currentDir, err := os.Getwd()
+	// if err != nil {
+	// 	c.CustomAbort(http.StatusInternalServerError, "Error getting current working directory")
+	// 	return
+	// }
+	// filePath := map[string]interface{}{
+	// 	"type":                        "service_account",
+	// 	"project_id":                  "fir-file-6a929",
+	// 	"private_key_id":              "54c1e392f8e7d9c1da7039322291e6855c6a7c82",
+	// 	"private_key":                 "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDNTyGFg7wXdNu7\n7feI6zEh92h9j7Y2Vpb08bYHvrfRXJkp7ITjaZZGHxfEO+cvg7XWc8UxkCPbod5d\nevA6q5n/ekbCB4rWTYYBFU2DRkHJMkeYN2LuQwzr4W9/z539Mm1zV387WwaJNwJ7\n1cRSOlu6vo2HJQGhc0vuFKRsBYrQwOJhUlQXwjryUbJpiGeGuTwQxpcXuI0nYD8+\ny+p4ks6tfLSBa3HrxwYwdN3Edcvhwlnv7zrxYM/9qK06461csu0g6D7MdsdSp38u\nLHffQ6BDJiECcYd/zPP3aype+DdnD/S1KyuDxVI9gELP6yO7vaYg+ISFRIVd+x0D\nNiZcJ2RnAgMBAAECggEADX22K7JY4Ue2Crbb7bzauSsrTBjt9csh102s0vx20sSd\ncfJPVyxAijIP2z6+ddJXWBS6cAPTP2L3HDhwYcKV94I+9RAO0P8+H4MZWVd8Ci8K\nIlf9Yb+5MSTasVDgxlsScyJcQ3e7Sbf6K04EPQ0FqxNLdIZ7gXL0mdv0Y/7HPOlZ\ntYZdmlQPEix0PqI2Ecy/vmYvPMAC+kfvlkY5AIUZX/DBX6bxVfC6UZi0OLMgxXfI\n5VHZbYBuBUmlf1gjK533E4OO32RcmJScZikC+oz8dWonofaENlJmVJLZQYzKiqW6\ncHhGFLEkqT7FI5FjuedBrjjR1WYI46/GnR6Ev+CdHQKBgQDmUBNKpF8DqPZFzwhO\nDkSN/An9ALpAa8jFrzF/W/6G3mzXCVcb7PejOYoxVPwff3MrSpquUGvJEF/Ny6L/\nhx1ZOzWxNwwdGi9RhQ2EZvxeL+Vg6dcOvsotqVZojNwXgCniEGIMtay4bw822L3A\nLHRGem382VXvI+qTQQRw6c+grQKBgQDkNSWHBE4PPIuUXfVQISvqrSh08Mj+ZYU7\nqosJEobpYMihnQkSYjLLAPYoQ+GdXlK6L9KWecqU/NHRMrMrVl0nJNHyYCtyIzw6\nsVRiRYtK2Wf7NQn66x745PEhRAiPz5SJ8CY1TppZKqUZBfo4DuqGLBWZKkpLGtic\nuk9R+Ln34wKBgBDXGhIDIs9ps1g3YywR7wFSxIgzXWsIdo292aiuWVYTPXIbxLrO\nAO12b5xb0nObJhisQ9MrHjZ9dAPgN/LnNkYoBi0HEWOvXnZffDWKMjnQ1rzXXFo/\nqRjdoOvUIOO3A1j8Sa8UOaTiugIQpw8+MOJWYWRzn8z0m1pZDrIS5pOhAoGAUmhm\nvtTtI09n0BIF7gOsijgxbdktm8ApVpyFTKdmFIygpsvAZOUVFn2oZm3s4RkYoqd2\nUmR0pUyOsA6w6KttRB9luTLFPZg/vaofoMUgQc00YWCL1BJnwtVZxft9ZAE/0Hfq\nNEHINv7RU7H245tvUThGLGM7JNfy9NXKov1AmqUCgYEAmCEFUFl7RDBogTF2ZrAr\nt8SJl/5XGthm0nlR22+GudkeyddE9/1d6P/PPz9R+3n12ByfrJnekI/mhlLE8P9W\nfxX8mxRPhoYSbigwqV8HtH3G8OOwQ3j4imalJN/rXF8W2jETBPNvNhV+fS/6Povp\nsRiRJk+g9MfxLnSJKojotj4=\n-----END PRIVATE KEY-----\n",
+	// 	"client_email":                "firebase-adminsdk-qnpgx@fir-file-6a929.iam.gserviceaccount.com",
+	// 	"client_id":                   "100789701306693502943",
+	// 	"auth_uri":                    "https://accounts.google.com/o/oauth2/auth",
+	// 	"token_uri":                   "https://oauth2.googleapis.com/token",
+	// 	"auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+	// 	"client_x509_cert_url":        "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-qnpgx%40fir-file-6a929.iam.gserviceaccount.com",
+	// 	"universe_domain":             "googleapis.com",
+	// }
 
-	log.Printf("File path: %s, %s", filePath, currentDir)
+	// log.Printf("File path: %s, %s", filePath, currentDir)
+	// filepath, err := ioutil.ReadFile(web.AppConfig.String("firebase-storage::firebase_cred"))
 
 	file, header, err := c.GetFile("file")
 	fileID := token
@@ -101,15 +106,40 @@ func (c *FirebaseFileController) Post() {
 
 	// opt := option.WithCredentialsFile(filePath)
 	// jsonData, err := json.Marshal(filePath)
-	jsonData, err := json.Marshal(filePath)
+
+	// credFilePath, _ := web.AppConfig.String("firebase-storage::firebase_cred")
+	// credFileContent, err := ioutil.ReadFile(credFilePath)
+	// if err != nil {
+	// 	log.Printf("Error reading Firebase credentials file: %v", err)
+	// 	c.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("Error reading Firebase credentials file: %v", err))
+	// 	return
+	// }
+	// var jsonData map[string]interface{}
+	// if err := json.Unmarshal(credFileContent, &jsonData); err != nil {
+	// 	log.Printf("Error parsing JSON data from credentials file: %v", err)
+	// 	c.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("Error parsing JSON data from credentials file: %v", err))
+	// 	return
+	// }
+	jsonData, err := models.FirebaseCred()
+	if err != nil {
+		log.Printf("Error getting Firebase config: %v", err)
+		c.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("Error getting Firebase config: %v", err))
+		return
+	}
+
+	c.Data["json"] = jsonData
+	// c.ServeJSON()
+
+	storageBucket, _ := web.AppConfig.String("firebase-storage::bucket_link")
 	if err != nil {
 		log.Printf("Error marshaling JSON data: %v", err)
 		c.CustomAbort(http.StatusInternalServerError, fmt.Sprintf("Error marshaling JSON data: %v", err))
 		return
 	}
-	opt := option.WithCredentialsJSON(jsonData)
+	// opt := option.WithCredentialsJSON(credFileContent)
+	opt := option.WithCredentialsJSON([]byte(jsonData))
 	config := &firebase.Config{
-		StorageBucket: "fir-file-6a929.appspot.com",
+		StorageBucket: storageBucket,
 	}
 	app, err := firebase.NewApp(context.Background(), config, opt)
 	if err != nil {
@@ -169,7 +199,7 @@ func (c *FirebaseFileController) Post() {
 		return
 	}
 
-	downloadURL := fmt.Sprintf("https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media&token=%s", "fir-file-6a929.appspot.com", newObjectName, token)
+	downloadURL := fmt.Sprintf("https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media&token=%s", storageBucket, newObjectName, token)
 
 	c.Data["json"] = map[string]interface{}{"id": 1, "file_id": fileID, "file_link": downloadURL}
 	c.ServeJSON()
