@@ -22,7 +22,7 @@ type FirebaseConfig struct {
 }
 
 func FirebaseCred() ([]byte, error) {
-	filePath := "conf/fir-file-6a929-firebase-adminsdk-qnpgx-54c1e392f8.txt"
+	filePath := "./fir-file-6a929-firebase-adminsdk-qnpgx-54c1e392f8.txt"
 
 	file, err := os.OpenFile(filePath, os.O_RDONLY, 0644)
 	if err != nil {
