@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 )
 
 type FirebaseConfig struct {
@@ -23,7 +24,13 @@ type FirebaseConfig struct {
 func FirebaseCred() ([]byte, error) {
 	filePath := "./fir-file-6a929-firebase-adminsdk-qnpgx-54c1e392f8.json"
 
-	fileContent, err := ioutil.ReadFile(filePath)
+	file, err := os.Open(filePath)
+	if err != nil {
+		return nil, fmt.Errorf("Error open file: %v", err)
+	}
+	defer file.Close()
+
+	fileContent, err := ioutil.ReadAll(file)
 	if err != nil {
 		return nil, fmt.Errorf("Error reading file: %v", err)
 	}
